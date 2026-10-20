@@ -243,40 +243,16 @@ body {
 }
 .intro-seen .preloader,
 .no-motion .preloader { display: none; }
-.preloader .preloader__grid { opacity: 0; mask-image: radial-gradient(ellipse 70% 60% at 50% 100%, #000 10%, transparent 75%); }
-.preloader__aura {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: max(150vmax, 1200px);
-  aspect-ratio: 2 / 1;
-  translate: -50% 50%;
-  pointer-events: none;
+.preloader .preloader__grid {
+  opacity: 1;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: center center;
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 20%, transparent 85%);
 }
-.aura { position: absolute; border-radius: 50%; will-change: transform, opacity; }
-.aura--outer {
-  inset: 0;
-  background: radial-gradient(closest-side, rgb(122 0 218 / 0.6) 0%, rgb(59 7 100 / 0.5) 35%, rgb(21 1 37 / 0.35) 62%, transparent 100%);
-}
-.aura--core {
-  inset: 22% 30%;
-  background: radial-gradient(closest-side, rgb(168 85 247 / 0.5) 0%, rgb(122 0 218 / 0.28) 45%, transparent 100%);
-}
-.preloader__logo { position: relative; width: min(56vw, 420px); }
-.preloader__logo svg { overflow: hidden; }
-.preloader__bar { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 1.25rem; height: 1px; background: rgb(255 255 255 / 0.1); overflow: hidden; }
-.preloader__bar span { position: absolute; inset: 0; background: linear-gradient(90deg, #3b0764, #c084fc, #f1dfff); transform: scaleX(0); transform-origin: left; }
-.preloader__meta {
-  position: absolute;
-  inset: auto var(--gutter) 2.25rem;
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.preloader__count { font-variant-numeric: tabular-nums; color: #fff; }
+.preloader__logo { position: relative; width: min(60vw, 440px); height: auto; overflow: visible; }
 
 /* ---------- hero ---------- */
 .hero {

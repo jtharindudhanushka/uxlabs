@@ -79,60 +79,27 @@ function runPreloader(): Promise<void> {
   }
   lenis?.stop();
   window.scrollTo(0, 0);
-  const counter = $('[data-count]', el);
-  const bar = $('[data-preloader-bar]', el);
-  const logo = $('.preloader__logo', el);
-  const paths = $$('svg path', el);
-  const aura = $('[data-aura]', el);
-  const outer = $('[data-aura-outer]', el);
-  const core = $('[data-aura-core]', el);
-  const progress = { v: 0 };
-
-  // The glow drifts gently toward the pointer (transform only)
-  const onPointer = finePointer && aura
-    ? (() => {
-        const xTo = gsap.quickTo(aura, 'x', { duration: 1.4, ease: 'power3' });
-        return (e: PointerEvent) => xTo((e.clientX / innerWidth - 0.5) * 120);
-      })()
-    : null;
-  if (onPointer) window.addEventListener('pointermove', onPointer);
-
-  // Slow breathing in the core keeps the light alive while loading
-  const breathe = core ? gsap.to(core, { scale: 1.08, opacity: 0.85, duration: 1.3, ease: 'sine.inOut', yoyo: true, repeat: -1 }) : null;
+  const logo = $('[data-preloader-logo]', el);
+  const purple = $('[data-fill-purple]', el);
+  const white = $('[data-fill-white]', el);
 
   return new Promise((resolve) => {
     gsap
       .timeline({
+        defaults: { ease: 'power2.inOut' },
         onComplete() {
-          breathe?.kill();
-          if (onPointer) window.removeEventListener('pointermove', onPointer);
           el.remove();
           lenis?.start();
           markSeen();
         },
       })
-      // 1 — light rises from below the horizon as we load
-      .fromTo(outer, { yPercent: 38, scale: 0.45, opacity: 0 }, { yPercent: 0, scale: 1, opacity: 1, duration: 2.4, ease: 'power2.out' }, 0)
-      .fromTo(core, { yPercent: 60 }, { yPercent: 0, duration: 2.6, ease: 'power3.out' }, 0.15)
-      .to('.preloader__grid', { opacity: 0.55, duration: 1.6, ease: 'power1.out' }, 0.3)
-      .to(progress, {
-        v: 100,
-        duration: 2.3,
-        ease: 'power2.inOut',
-        onUpdate: () => {
-          if (counter) counter.textContent = String(Math.round(progress.v)).padStart(3, '0');
-          if (bar) bar.style.transform = `scaleX(${progress.v / 100})`;
-        },
-      }, 0)
-      // 2 — wordmark rises in
-      .from(paths, { yPercent: 115, duration: 1.2, stagger: 0.06, ease: 'expo.out' }, 0.25)
-      .to(logo, { scale: 1.03, duration: 1, ease: 'power2.inOut' }, 1.8)
-      // 3 — light swells, logo exits, curtain lifts onto the hero glow
-      .to(outer, { scale: 1.3, duration: 1.1, ease: 'power3.in' }, 2.3)
-      .to(paths, { yPercent: -115, duration: 0.7, stagger: 0.04, ease: 'expo.in' }, 2.45)
-      .to(['.preloader__meta', '.preloader__bar'], { autoAlpha: 0, duration: 0.4 }, 2.45)
-      .to(el, { clipPath: 'inset(0% 0% 100% 0%)', duration: 1.15, ease: 'expo.inOut' }, 2.95)
-      .add(() => resolve(), 3.35);
+      // Purple rises inside the letters, white follows right behind it
+      .to(purple, { attr: { y: 0 }, duration: 1.4 }, 0.2)
+      .to(white, { attr: { y: 0 }, duration: 1.1 }, 1.1)
+      // Then everything lifts away
+      .to(logo, { yPercent: -60, autoAlpha: 0, duration: 0.9, ease: 'expo.in' }, 2.35)
+      .to(el, { clipPath: 'inset(0% 0% 100% 0%)', duration: 1.1, ease: 'expo.inOut' }, 2.55)
+      .add(() => resolve(), 2.95);
   });
 }
 

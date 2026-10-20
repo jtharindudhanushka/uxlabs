@@ -1,17 +1,23 @@
 ---
-import Logo from './Logo.astro';
+import { LOGO_PATHS, LOGO_VIEWBOX } from './logo-paths';
 ---
 <div class="preloader" aria-hidden="true" data-preloader>
   <div class="preloader__grid bg-grid"></div>
-  <div class="preloader__aura" data-aura>
-    <div class="aura aura--outer" data-aura-outer></div>
-    <div class="aura aura--core" data-aura-core></div>
-  </div>
-  <div class="preloader__logo"><Logo /></div>
-  <div class="preloader__meta">
-    <span>Simple by design</span>
-    <span class="preloader__count" data-count>000</span>
-    <span>Built to grow</span>
-  </div>
-  <div class="preloader__bar"><span data-preloader-bar></span></div>
+  <svg class="preloader__logo" viewBox={LOGO_VIEWBOX} xmlns="http://www.w3.org/2000/svg" data-preloader-logo>
+    <defs>
+      <clipPath id="pl-clip">
+        {LOGO_PATHS.map((d) => <path d={d} />)}
+      </clipPath>
+      <linearGradient id="pl-purple" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#3b0764" />
+        <stop offset="0.6" stop-color="#7a00da" />
+        <stop offset="1" stop-color="#c084fc" />
+      </linearGradient>
+    </defs>
+    <g clip-path="url(#pl-clip)">
+      <rect width="520" height="138" fill="#ffffff" fill-opacity="0.07" />
+      <rect width="520" height="138" y="138" fill="url(#pl-purple)" data-fill-purple />
+      <rect width="520" height="138" y="138" fill="#ffffff" data-fill-white />
+    </g>
+  </svg>
 </div>
