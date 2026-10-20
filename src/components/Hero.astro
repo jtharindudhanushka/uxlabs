@@ -1,0 +1,48 @@
+---
+import Button from './Button.astro';
+const stats = [
+  { value: '10', prefix: '', suffix: '-day', title: 'target', text: 'For focused projects with timely feedback.' },
+  { value: '499', prefix: 'From $', suffix: '', title: '', text: 'Fixed project pricing.' },
+  { value: '', prefix: '', suffix: '', title: 'Design + development', text: 'One process, one team.' },
+];
+---
+<section id="top" class="hero">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="orb" data-hero-orb aria-hidden="true"></div>
+
+  <div class="container-x relative">
+    <div class="mb-8 flex flex-wrap items-center gap-4 md:mb-10" data-hero-fade>
+      <span class="pill"><i class="dot"></i>Available for work</span>
+      <span class="eyebrow">Website design &amp; development</span>
+    </div>
+
+    <h1 class="hero__title display max-w-[14ch]" data-hero-title>
+      Websites, designed properly. Delivered quickly.
+    </h1>
+
+    <div class="mt-10 grid gap-10 md:mt-14 md:grid-cols-12 md:items-end">
+      <div class="md:col-span-6 lg:col-span-5" data-hero-fade>
+        <p class="lead max-w-[46ch]">
+          UX Labs creates considered websites for startups and growing businesses — from the first screen to the final launch.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <Button href="#pricing" label="View packages" arrow />
+          <Button href="#start" label="Start a project" variant="ghost" />
+        </div>
+      </div>
+
+      <dl class="grid grid-cols-3 gap-4 border-t pt-6 hairline md:col-span-6 md:col-start-7 lg:col-span-6 lg:col-start-7" data-hero-fade>
+        {stats.map((s) => (
+          <div>
+            <dt class="text-base font-medium tracking-tight text-white md:text-lg">
+              {s.value ? (
+                <>{s.prefix}<span data-count-to={s.value}>{s.value}</span>{s.suffix} {s.title}</>
+              ) : s.title}
+            </dt>
+            <dd class="mt-1.5 text-xs leading-relaxed text-white/50 md:text-sm">{s.text}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,8 @@
+---
+interface Props { num?: string; label: string; class?: string }
+const { num, label, class: className = '' } = Astro.props;
+---
+<p class={`eyebrow ${className}`} data-reveal>
+  {num && <span class="eyebrow__num">{num}</span>}
+  <span>{label}</span>
+</p>

@@ -1,0 +1,26 @@
+---
+import Eyebrow from './Eyebrow.astro';
+const faqs = [
+  { q: 'How long does a website take?', a: 'Our target is 10 days for a focused project. Scope, content and feedback can affect the final timeline.' },
+  { q: 'How does payment work?', a: '50% to begin the project and 50% before launch.' },
+  { q: 'Is hosting included?', a: 'Yes, within the hosting limits of your package. Domain registration is also included within the stated allowance.' },
+  { q: 'Can you maintain the website?', a: 'Yes. Optional monthly care is available for $30/month, or $60/month for Commerce.' },
+  { q: 'Can you build something outside the packages?', a: "Yes. Get in touch and we'll scope custom requirements separately." },
+];
+---
+<section id="faq" class="section">
+  <div class="container-x grid gap-12 lg:grid-cols-12">
+    <div class="lg:col-span-5">
+      <Eyebrow num="08" label="Frequently asked" />
+      <h2 class="h-section mt-6 max-w-[11ch]" data-split>A few things worth knowing.</h2>
+    </div>
+    <div class="faq border-t hairline lg:col-span-7" data-reveal>
+      {faqs.map((f, i) => (
+        <details name="faq" open={i === 0}>
+          <summary>{f.q}<span class="faq__icon" aria-hidden="true"></span></summary>
+          <p class="max-w-[58ch] pb-8 pr-16 text-white/60">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

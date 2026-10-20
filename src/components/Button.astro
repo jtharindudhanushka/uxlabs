@@ -1,0 +1,25 @@
+---
+interface Props {
+  href: string;
+  label: string;
+  variant?: 'light' | 'ghost';
+  size?: 'md' | 'sm';
+  arrow?: boolean;
+  class?: string;
+  type?: 'submit' | 'button';
+}
+const { href, label, variant = 'light', size = 'md', arrow = false, class: className = '', type } = Astro.props;
+const cls = ['btn', `btn--${variant}`, size === 'sm' && 'btn--sm', className].filter(Boolean).join(' ');
+const external = /^https?:/.test(href);
+---
+{type ? (
+  <button type={type} class={cls} data-magnetic>
+    <span class="btn__roll"><span data-text={label}>{label}</span></span>
+    {arrow && <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>}
+  </button>
+) : (
+  <a href={href} class={cls} data-magnetic {...(external ? { target: '_blank', rel: 'noopener' } : {})}>
+    <span class="btn__roll"><span data-text={label}>{label}</span></span>
+    {arrow && <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>}
+  </a>
+)}

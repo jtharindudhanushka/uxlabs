@@ -1,0 +1,35 @@
+---
+import Logo from './Logo.astro';
+import Button from './Button.astro';
+import { NAV, BOOKING_URL } from '../config';
+---
+<header class="site-header" data-header>
+  <div class="container-x relative flex h-20 items-center justify-between gap-6">
+    <a href="#top" class="relative block w-[5.5rem] text-white" aria-label="UX Labs — back to top" data-magnetic>
+      <Logo class="h-auto w-full" />
+    </a>
+    <nav class="nav-pill absolute left-1/2 hidden -translate-x-1/2 md:flex" aria-label="Main">
+      {NAV.map((item) => <a href={item.href}>{item.label}</a>)}
+    </nav>
+    <div class="relative flex items-center gap-3">
+      <Button href="#start" label="Start a project" size="sm" class="hidden sm:inline-flex" />
+      <button class="menu-btn md:hidden" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" data-menu-btn>
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div id="mobile-menu" class="mobile-menu md:hidden" data-mobile-menu>
+  <nav aria-label="Mobile">
+    {NAV.map((item, i) => (
+      <a class="big" href={item.href}>
+        <span class="mr-3 align-top text-sm tracking-normal text-white/40">0{i + 1}</span>{item.label}
+      </a>
+    ))}
+  </nav>
+  <div class="mt-10 flex flex-wrap gap-3">
+    <Button href="#start" label="Start a project" />
+    <Button href={BOOKING_URL} label="Book a call" variant="ghost" />
+  </div>
+</div>

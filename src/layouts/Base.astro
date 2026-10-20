@@ -1,0 +1,43 @@
+---
+import '../styles/global.css';
+
+interface Props { title?: string; description?: string }
+const {
+  title = 'UX Labs — Websites, designed properly. Delivered quickly.',
+  description = 'UX Labs creates considered websites for startups and growing businesses — from the first screen to the final launch. Fixed pricing from $499, 10-day target.',
+} = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/img/wizesage-phones.webp" />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('js');
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('no-motion');
+        try { if (sessionStorage.getItem('uxl-intro') === '1') d.classList.add('intro-seen'); } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+    <div class="grain" aria-hidden="true"></div>
+    <div class="cursor" aria-hidden="true">
+      <div class="cursor__ring"><span data-cursor-label>View</span></div>
+      <div class="cursor__dot"></div>
+    </div>
+    <script>
+      import '../scripts/main';
+    </script>
+  </body>
+</html>

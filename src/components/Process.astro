@@ -1,0 +1,30 @@
+---
+import Eyebrow from './Eyebrow.astro';
+const steps = [
+  { tag: '01 / Discover', title: 'Brief & direction', text: 'We learn about your business, audience and requirements, then establish the scope and direction.' },
+  { tag: '02 / Design & build', title: 'Design & development', text: 'The website takes shape through design and development, with progress shared throughout.' },
+  { tag: '03 / Launch', title: 'Refine & launch', text: 'We make the final refinements, test across devices and deploy the finished website.' },
+];
+---
+<section id="process" class="section">
+  <div class="container-x">
+    <Eyebrow num="03" label="Process" />
+    <h2 class="h-section mt-6 max-w-[16ch]" data-split>A straightforward way to build a website.</h2>
+
+    <ol class="mt-16 grid gap-12 md:mt-24 md:grid-cols-3 md:gap-6">
+      {steps.map((s, i) => (
+        <li class="relative pt-8" data-reveal>
+          <span class="absolute inset-x-0 top-0 h-px origin-left bg-white/25" data-line aria-hidden="true"></span>
+          <p class="text-xs uppercase tracking-[0.16em] text-white/50">{s.tag}</p>
+          <p class="mt-10 text-[clamp(4rem,7vw,7rem)] font-light leading-none tracking-[-0.06em] text-grad" aria-hidden="true">0{i + 1}</p>
+          <h3 class="mt-6 text-2xl font-medium tracking-tight">{s.title}</h3>
+          <p class="mt-3 max-w-[36ch] text-white/60">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+
+    <p class="mt-16 max-w-[60ch] border-t pt-6 text-sm text-white/50 hairline" data-reveal>
+      The standard target is 10 days. The final timeline depends on project scope and the speed of content and feedback.
+    </p>
+  </div>
+</section>

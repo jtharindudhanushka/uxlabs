@@ -1,0 +1,27 @@
+---
+import Eyebrow from './Eyebrow.astro';
+const items = [
+  { title: 'Responsive design', text: 'Designed to work across desktop, tablet and mobile.', icon: 'M4 5h16v11H4zM8 20h8M12 16v4' },
+  { title: 'SEO setup', text: 'Essential on-page setup for a solid search foundation.', icon: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4' },
+  { title: 'Analytics', text: 'Configured so you can understand how the site is being used.', icon: 'M4 20V10M10 20V4M16 20v-7M22 20H2' },
+  { title: 'Deployment', text: 'We take care of the final setup and launch.', icon: 'M12 3c4 2 6 6 6 10l-3 3H9l-3-3c0-4 2-8 6-10ZM12 10v.01M9 20h6' },
+  { title: 'Hosting & domain', text: 'Included within the limits of the selected package.', icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9Z' },
+  { title: 'Content management', text: 'CMS functionality for blogs, portfolios and similar content where included.', icon: 'M4 4h16v16H4zM4 9h16M9 9v11' },
+];
+---
+<section class="section pt-0!">
+  <div class="container-x">
+    <Eyebrow num="05" label="Included" />
+    <h2 class="h-section mt-6 max-w-[18ch]" data-split>Everything needed to get your website live.</h2>
+
+    <div class="mt-14 grid gap-px overflow-hidden rounded-3xl border bg-white/10 hairline sm:grid-cols-2 lg:grid-cols-3 md:mt-20">
+      {items.map((it) => (
+        <div class="relative isolate bg-black p-8 md:p-10" data-spotlight data-reveal>
+          <svg class="h-7 w-7 text-[#c084fc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={it.icon} /></svg>
+          <h3 class="mt-14 text-xl font-medium tracking-tight">{it.title}</h3>
+          <p class="mt-2 text-white/55">{it.text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

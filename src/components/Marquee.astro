@@ -1,0 +1,14 @@
+---
+const items = ['Website design', 'Development', 'Responsive design', 'SEO setup', 'Analytics', 'Content management', 'E-commerce', 'Deployment'];
+const loop = [...items, ...items];
+---
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track" data-marquee>
+    {loop.map((item) => (
+      <div class="marquee__item">
+        <span>{item}</span>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 6.3 5.7 11.4 12 12-6.3.6-11.4 5.7-12 12-.6-6.3-5.7-11.4-12-12C6.3 11.4 11.4 6.3 12 0Z" /></svg>
+      </div>
+    ))}
+  </div>
+</div>

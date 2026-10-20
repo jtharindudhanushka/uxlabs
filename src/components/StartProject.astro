@@ -1,0 +1,72 @@
+---
+import Eyebrow from './Eyebrow.astro';
+import Button from './Button.astro';
+import { BOOKING_URL, WEB3FORMS_KEY } from '../config';
+const steps = [
+  { n: '01', t: 'Submit your brief' },
+  { n: '02', t: 'Confirm the scope' },
+  { n: '03', t: 'Pay 50% & begin' },
+];
+const countries = ['Sri Lanka', 'United States', 'United Kingdom', 'Australia', 'Canada', 'India', 'United Arab Emirates', 'Singapore', 'Germany', 'Netherlands', 'Other'];
+const types = ['New website', 'Website redesign', 'E-commerce store', 'Something custom'];
+---
+<section id="start" class="section relative overflow-hidden">
+  <div class="orb left-[10%]! top-[20%] w-[60vmax] opacity-50" aria-hidden="true"></div>
+  <div class="container-x relative grid gap-16 lg:grid-cols-12">
+    <div class="lg:col-span-5">
+      <div class="lg:sticky lg:top-28">
+        <Eyebrow num="07" label="Start a project" />
+        <h2 class="h-section mt-6 max-w-[12ch]" data-split>Tell us what you're working on.</h2>
+        <p class="lead mt-8 max-w-[42ch]" data-reveal>
+          Send us a few details about your business and website. We'll review the brief, confirm the scope and send the first invoice.
+        </p>
+        <ol class="mt-12 grid">
+          {steps.map((s) => (
+            <li class="relative flex items-baseline gap-6 py-5" data-reveal>
+              <span class="absolute inset-x-0 top-0 h-px origin-left bg-white/15" data-line aria-hidden="true"></span>
+              <span class="text-sm tabular-nums text-[#c084fc]">{s.n}</span>
+              <span class="text-lg">{s.t}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+
+    <form
+      class="card grid gap-8 overflow-visible! p-7 md:grid-cols-2 md:p-12 lg:col-span-7"
+      data-brief-form
+      data-endpoint={WEB3FORMS_KEY ? 'https://api.web3forms.com/submit' : ''}
+      data-reveal
+    >
+      <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
+      <input type="hidden" name="subject" value="New project brief — UX Labs website" />
+      <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" />
+
+      <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" placeholder="Your name" autocomplete="name" required /></div>
+      <div class="field"><label for="f-business">Business</label><input id="f-business" name="business" placeholder="Business name" autocomplete="organization" /></div>
+      <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required /></div>
+      <div class="field">
+        <label for="f-country">Country</label>
+        <select id="f-country" name="country" required data-select>
+          <option value="" disabled selected>Select country</option>
+          {countries.map((c) => <option>{c}</option>)}
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-type">Project type</label>
+        <select id="f-type" name="project_type" data-select>
+          {types.map((t) => <option>{t}</option>)}
+        </select>
+      </div>
+      <div class="field"><label for="f-site">Current website · optional</label><input id="f-site" name="current_website" type="url" placeholder="https://" /></div>
+      <div class="field md:col-span-2"><label for="f-about">About the project</label><textarea id="f-about" name="message" rows="4" placeholder="Tell us about the business, what you need and what you'd like the website to achieve." required></textarea></div>
+      <div class="field md:col-span-2"><label for="f-insp">Inspiration · optional</label><textarea id="f-insp" name="inspiration" rows="2" placeholder="Share websites or references you like."></textarea></div>
+
+      <div class="flex flex-wrap items-center gap-3 md:col-span-2">
+        <Button type="submit" href="" label="Submit brief" arrow />
+        <Button href={BOOKING_URL} label="Book a call" variant="ghost" />
+        <p class="w-full text-sm text-white/60" role="status" aria-live="polite" data-form-status></p>
+      </div>
+    </form>
+  </div>
+</section>
