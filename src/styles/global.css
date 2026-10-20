@@ -243,20 +243,32 @@ body {
 }
 .intro-seen .preloader,
 .no-motion .preloader { display: none; }
-.preloader__glow {
+.preloader .preloader__grid { opacity: 0; mask-image: radial-gradient(ellipse 70% 60% at 50% 100%, #000 10%, transparent 75%); }
+.preloader__aura {
   position: absolute;
-  width: 60vmax;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgb(122 0 218 / 0.45), rgb(59 7 100 / 0.25) 40%, transparent 70%);
-  filter: blur(30px);
-  opacity: 0;
-  transform: scale(0.6);
+  left: 50%;
+  bottom: 0;
+  width: max(150vmax, 1200px);
+  aspect-ratio: 2 / 1;
+  translate: -50% 50%;
+  pointer-events: none;
+}
+.aura { position: absolute; border-radius: 50%; will-change: transform, opacity; }
+.aura--outer {
+  inset: 0;
+  background: radial-gradient(closest-side, rgb(122 0 218 / 0.6) 0%, rgb(59 7 100 / 0.5) 35%, rgb(21 1 37 / 0.35) 62%, transparent 100%);
+}
+.aura--core {
+  inset: 22% 30%;
+  background: radial-gradient(closest-side, rgb(168 85 247 / 0.5) 0%, rgb(122 0 218 / 0.28) 45%, transparent 100%);
 }
 .preloader__logo { position: relative; width: min(56vw, 420px); }
+.preloader__logo svg { overflow: hidden; }
+.preloader__bar { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 1.25rem; height: 1px; background: rgb(255 255 255 / 0.1); overflow: hidden; }
+.preloader__bar span { position: absolute; inset: 0; background: linear-gradient(90deg, #3b0764, #c084fc, #f1dfff); transform: scaleX(0); transform-origin: left; }
 .preloader__meta {
   position: absolute;
-  inset: auto var(--gutter) 2rem;
+  inset: auto var(--gutter) 2.25rem;
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
@@ -294,9 +306,9 @@ body {
   translate: -50% 0;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(122 0 218 / 0.6) 0%, rgb(59 7 100 / 0.5) 32%, rgb(21 1 37 / 0.3) 52%, transparent 70%);
-  filter: blur(40px);
+  background: radial-gradient(closest-side, rgb(122 0 218 / 0.55) 0%, rgb(59 7 100 / 0.45) 40%, rgb(21 1 37 / 0.28) 70%, transparent 100%);
   pointer-events: none;
+  will-change: transform;
 }
 .hero .orb { width: 80vmax; bottom: -52vmax; }
 .hero__title { font-size: clamp(3.3rem, 10.6vw, 12.75rem); }
@@ -392,8 +404,7 @@ body {
   aspect-ratio: 1;
   translate: -50% 0;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(122 0 218 / 0.55), transparent 62%);
-  filter: blur(30px);
+  background: radial-gradient(closest-side, rgb(122 0 218 / 0.5), rgb(59 7 100 / 0.25) 55%, transparent 100%);
 }
 .studio__stage {
   position: absolute;

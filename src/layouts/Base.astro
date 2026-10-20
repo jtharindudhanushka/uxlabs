@@ -24,6 +24,7 @@ const {
       (function () {
         var d = document.documentElement;
         d.classList.add('js');
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('no-motion');
         try { if (sessionStorage.getItem('uxl-intro') === '1') d.classList.add('intro-seen'); } catch (e) {}
       })();

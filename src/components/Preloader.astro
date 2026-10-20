@@ -2,11 +2,16 @@
 import Logo from './Logo.astro';
 ---
 <div class="preloader" aria-hidden="true" data-preloader>
-  <div class="preloader__glow"></div>
+  <div class="preloader__grid bg-grid"></div>
+  <div class="preloader__aura" data-aura>
+    <div class="aura aura--outer" data-aura-outer></div>
+    <div class="aura aura--core" data-aura-core></div>
+  </div>
   <div class="preloader__logo"><Logo /></div>
   <div class="preloader__meta">
     <span>Simple by design</span>
     <span class="preloader__count" data-count>000</span>
     <span>Built to grow</span>
   </div>
+  <div class="preloader__bar"><span data-preloader-bar></span></div>
 </div>
