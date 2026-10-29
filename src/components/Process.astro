@@ -1,48 +1,44 @@
 ---
 import Eyebrow from './Eyebrow.astro';
-import { sectionImage } from '../lib/section-images';
 
 const steps = [
-  { key: 'brief', day: 'Day 0', title: 'Brief & direction', text: 'We learn about your business, audience and requirements, then establish the scope and direction.' },
-  { key: 'draft', day: 'Day 2', title: 'First draft', text: 'A first design draft lands within two days, so you have something real to react to.' },
-  { key: 'build', day: 'Day 3–9', title: 'Refine & build', text: 'We brainstorm it together, refine the design and build it out, with progress shared throughout.' },
-  { key: 'launch', day: 'Day 10', title: 'Launch', text: 'We make the final refinements, test across devices and deliver the finished website.*' },
-].map((s) => ({ ...s, img: sectionImage(`process-${s.key}`) }));
+  { key: 'brief', day: 0, label: 'Day 0', title: 'Brief & direction', text: 'We learn about your business, audience and requirements, then establish the scope and direction.' },
+  { key: 'draft', day: 2, label: 'Day 2', title: 'First draft', text: 'A first design draft lands within two days, so you have something real to react to.' },
+  { key: 'build', day: 6, label: 'Day 3–9', title: 'Refine & build', text: 'We brainstorm it together, refine the design and build it out, with progress shared throughout.' },
+  { key: 'launch', day: 10, label: 'Day 10', title: 'Launch', text: 'Final refinements, testing across devices, and the finished website delivered.*' },
+];
 ---
-<section id="process" class="section">
-  <div class="container-x">
-    <Eyebrow num="03" label="Process" />
-    <h2 class="h-section mt-6 max-w-[16ch]" data-split>A straightforward way to build a website.</h2>
-
-    <div class="flow mt-16 md:mt-24" data-flow>
-      <div class="flow__guides" aria-hidden="true">
-        <span></span><span></span><span></span>
-        <i class="flow__spark" data-flow-spark></i>
+<section id="process" class="hscroll" data-hscroll>
+  <div class="hscroll__sticky">
+    <div class="container-x hscroll__head">
+      <div>
+        <Eyebrow num="03" label="Process" />
+        <h2 class="h-section mt-6 max-w-[16ch]" data-split>A straightforward way to build a website.</h2>
       </div>
-
-      {steps.map((s, i) => (
-        <div class:list={['flow__row', i % 2 === 1 && 'flow__row--right', i === 0 && 'is-active']} data-flow-row>
-          <div class="flow__cell flow__cell--text">
-            <p class="flow__day">{s.day}</p>
-            <h3 class="flow__title">{s.title}</h3>
-            <p class="flow__text">{s.text}</p>
-          </div>
-          <div class="flow__cell flow__cell--object">
-            <span class="flow__leader" aria-hidden="true"><i></i></span>
-            <div class="flow__object" data-tilt data-depth={i % 2 ? '-1' : '1'}>
-              {s.img ? (
-                <img src={s.img.src} width={s.img.width} height={s.img.height} alt="" loading="lazy" decoding="async" />
-              ) : (
-                <span class="flow__placeholder" aria-hidden="true"></span>
-              )}
-            </div>
-          </div>
-          <div class="flow__cell flow__cell--empty" aria-hidden="true"></div>
-        </div>
-      ))}
+      <p class="hscroll__counter" aria-hidden="true">
+        <span class="hscroll__counter-label">Day</span>
+        <span class="hscroll__counter-num" data-day-counter>00</span>
+      </p>
     </div>
 
-    <p class="mt-10 max-w-[64ch] text-sm text-white/45" data-reveal>
+    <div class="hscroll__rail" aria-hidden="true">
+      <span class="hscroll__rail-fill" data-rail-fill></span>
+    </div>
+
+    <ol class="hscroll__track" data-hscroll-track>
+      {steps.map((s, i) => (
+        <li class:list={['stage', i === 0 && 'is-active']} data-stage data-day={s.day}>
+          <div class="stage__object" data-device={s.key} data-motion="turn" aria-hidden="true"></div>
+          <div class="stage__copy">
+            <p class="stage__day"><span class="stage__node"></span>{s.label}</p>
+            <h3 class="stage__title">{s.title}</h3>
+            <p class="stage__text">{s.text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <p class="container-x hscroll__note">
       *First draft within 2 days and delivery within 10 days for focused projects. Conditions apply: the final timeline depends on project scope and the speed of content and feedback.
     </p>
   </div>

@@ -1,7 +1,6 @@
 ---
 import Eyebrow from './Eyebrow.astro';
 import Button from './Button.astro';
-import { sectionImage } from '../lib/section-images';
 const plans = [
   {
     name: 'Website', usd: '499', lkr: '150,000', featured: false, cta: 'Choose website',
@@ -13,7 +12,7 @@ const plans = [
     desc: 'A complete website with an integrated online store.',
     features: ['Landing page + up to 10 subpages', 'Built-in e-commerce store', '1 CMS in addition to the store', 'Responsive design', 'SEO setup', 'Analytics setup', 'Deployment', 'Hosting within plan limits', 'Domain within plan allowance'],
   },
-].map((p) => ({ ...p, img: sectionImage(`pricing-${p.name.toLowerCase()}`) }));
+];
 ---
 <section id="pricing" class="section">
   <div class="container-x">
@@ -30,11 +29,13 @@ const plans = [
     <div class="mt-14 grid gap-4 md:mt-20 md:grid-cols-2">
       {plans.map((p) => (
         <article class:list={['card flex flex-col p-7 md:p-10', p.featured && 'card--featured']} data-spotlight data-tilt-zone data-reveal>
-          {p.img && (
-            <div class:list={['plan__object', p.featured && 'plan__object--featured']} data-tilt aria-hidden="true">
-              <img src={p.img.src} width={p.img.width} height={p.img.height} alt="" loading="lazy" decoding="async" />
-            </div>
-          )}
+          <div
+            class:list={['plan__object', p.featured && 'plan__object--featured']}
+            data-device={p.featured ? 'commerce' : 'website'}
+            data-motion="spin"
+            data-active="true"
+            aria-hidden="true"
+          ></div>
           <div class="flex items-center justify-between gap-4">
             <h3 class="text-xl font-medium tracking-tight">{p.name}</h3>
             {p.featured && <span class="pill text-[0.7rem] uppercase tracking-[0.14em]"><i class="dot"></i>Most popular</span>}

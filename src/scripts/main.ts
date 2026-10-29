@@ -223,17 +223,6 @@ function scrollAnimations() {
     });
   });
 
-  // About visual: glass panels spread apart in depth while scrolling past
-  const studio = $('[data-studio]');
-  const stage = $('[data-studio-stage]');
-  if (studio && stage) {
-    gsap.fromTo(stage, { '--spread': 0 }, {
-      '--spread': 1,
-      ease: 'none',
-      scrollTrigger: { trigger: studio, start: 'top bottom', end: 'bottom top', scrub: true },
-    });
-  }
-
   // Number count-up
   $$('[data-count-to]').forEach((el) => {
     const end = parseFloat(el.dataset.countTo || '0');
@@ -270,51 +259,81 @@ function scrollAnimations() {
   }
 }
 
-/* ---------- process flow ---------- */
-function processFlow() {
-  const flow = $('[data-flow]');
-  if (!flow) return;
-  const rows = $$('[data-flow-row]', flow);
-  const setActive = (row: HTMLElement) => rows.forEach((r) => r.classList.toggle('is-active', r === row));
+/* ---------- process: pinned horizontal track ---------- */
+function processTrack() {
+  const section = $('[data-hscroll]');
+  const track = $('[data-hscroll-track]');
+  if (!section || !track || reduceMotion) return;
+  const stages = $$('[data-stage]', track);
+  const counter = $('[data-day-counter]', section);
+  const fill = $('[data-rail-fill]', section);
+  const days = stages.map((el) => parseFloat(el.dataset.day || '0'));
 
-  // The row crossing the middle of the screen is the active stage
-  rows.forEach((row) => {
-    ScrollTrigger.create({
-      trigger: row,
-      start: 'top 58%',
-      end: 'bottom 58%',
-      onToggle: (self) => { if (self.isActive) setActive(row); },
-    });
-  });
-
-  if (reduceMotion) return;
-
-  // A point of light travels down the guide line as you scroll through the stages
-  const spark = $('[data-flow-spark]', flow);
-  if (spark) {
-    gsap.fromTo(spark, { y: 0 }, {
-      y: () => flow.offsetHeight,
+  gsap.matchMedia().add('(min-width: 768px)', () => {
+    const distance = () => Math.max(0, track.scrollWidth - document.documentElement.clientWidth);
+    let current = -1;
+    const tween = gsap.to(track, {
+      x: () => -distance(),
       ease: 'none',
-      scrollTrigger: { trigger: flow, start: 'top 58%', end: 'bottom 58%', scrub: 0.6, invalidateOnRefresh: true },
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: () => `+=${distance()}`,
+        pin: true,
+        scrub: 0.8,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const p = self.progress;
+          if (fill) fill.style.transform = `scaleX(${p})`;
+          const i = Math.min(stages.length - 1, Math.round(p * (stages.length - 1)));
+          if (i !== current) {
+            current = i;
+            stages.forEach((el, j) => el.classList.toggle('is-active', j === i));
+          }
+          // The day counter runs continuously from Day 0 to Day 10 across the track
+          if (counter) counter.textContent = String(Math.round(p * days[days.length - 1])).padStart(2, '0');
+        },
+      },
     });
-  }
-
-  // Each render drifts at its own depth while scrolling (subtle parallax)
-  $$('.flow__object', flow).forEach((el) => {
-    const depth = parseFloat(el.dataset.depth || '1');
-    gsap.fromTo(el, { y: 26 * depth }, {
-      y: -26 * depth,
-      ease: 'none',
-      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true },
-    });
+    return () => tween.scrollTrigger?.kill();
   });
+}
+
+/* ---------- ascii canvases (work card, portrait) ---------- */
+function asciiCanvases() {
+  $$<HTMLCanvasElement>('canvas[data-ascii]').forEach((canvas) => {
+    const src = canvas.dataset.src;
+    if (!src) return;
+    const intro = canvas.dataset.intro !== 'false' && !reduceMotion;
+    const anchorY = parseFloat(canvas.dataset.anchor || '0.5');
+    let scene: Promise<AsciiScene | null> | null = null;
+    const prepare = () => (scene ??= createAsciiScene(canvas, src, { cell: 8, lens: 90, intro, anchorY }));
+    // Load a little before it scrolls into view, start once it is properly visible
+    ScrollTrigger.create({ trigger: canvas, start: 'top bottom+=400', once: true, onEnter: prepare });
+    ScrollTrigger.create({ trigger: canvas, start: 'top 78%', once: true, onEnter: () => prepare().then((s) => s?.start()) });
+  });
+}
+
+/* ---------- 3D devices (lazy) ---------- */
+function devices() {
+  const first = document.querySelector('[data-device]');
+  if (!first) return;
+  const io = new IntersectionObserver((entries) => {
+    if (!entries.some((e) => e.isIntersecting)) return;
+    io.disconnect();
+    import('./devices').then(({ initDevices }) => {
+      const tick = initDevices({ reduceMotion, finePointer });
+      if (tick) gsap.ticker.add(tick);
+    });
+  }, { rootMargin: '900px' });
+  document.querySelectorAll('[data-device]').forEach((el) => io.observe(el));
 }
 
 /* ---------- 3D tilt for renders ---------- */
 function tiltRenders() {
   if (!finePointer || reduceMotion) return;
   $$('[data-tilt]').forEach((el) => {
-    const zone = el.closest<HTMLElement>('[data-tilt-zone], [data-flow-row]') || el;
+    const zone = el.closest<HTMLElement>('[data-tilt-zone], [data-stage]') || el;
     gsap.set(el, { transformPerspective: 800 });
     const rx = gsap.quickTo(el, 'rotationX', { duration: 0.9, ease: 'power3' });
     const ry = gsap.quickTo(el, 'rotationY', { duration: 0.9, ease: 'power3' });
@@ -359,23 +378,6 @@ function pointerEffects() {
       const py = e.clientY / innerHeight - 0.5;
       squares.forEach((q) => { q.xTo(px * q.depth); q.yTo(py * q.depth); });
     });
-  }
-
-  // About visual tilts toward the pointer
-  const studio = $('[data-studio]');
-  const stage = $('[data-studio-stage]');
-  if (studio && stage) {
-    gsap.set(stage, { rotationX: 14, rotationY: -26 });
-    const rxTo = gsap.quickTo(stage, 'rotationX', { duration: 1.2, ease: 'power3' });
-    const ryTo = gsap.quickTo(stage, 'rotationY', { duration: 1.2, ease: 'power3' });
-    studio.addEventListener('pointermove', (e) => {
-      const r = studio.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width - 0.5;
-      const py = (e.clientY - r.top) / r.height - 0.5;
-      ryTo(-26 + px * 24);
-      rxTo(14 - py * 18);
-    });
-    studio.addEventListener('pointerleave', () => { rxTo(14); ryTo(-26); });
   }
 
   // Magnetic buttons
@@ -596,7 +598,9 @@ async function init() {
   pointerEffects();
   await document.fonts.ready;
   scrollAnimations();
-  processFlow();
+  processTrack();
+  asciiCanvases();
+  devices();
   tiltRenders();
   marquee();
   const scenePromise = prepareHeroScene();

@@ -22,7 +22,16 @@ export interface AsciiScene {
   destroy(): void;
 }
 
-export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, opts: { cell?: number; lens?: number } = {}): Promise<AsciiScene | null> {
+export interface AsciiOptions {
+  cell?: number;
+  lens?: number;
+  /** start as code and compile into the image (default true) */
+  intro?: boolean;
+  /** vertical anchor for the cover crop: 1 = bottom (default), 0.5 = centre, 0 = top */
+  anchorY?: number;
+}
+
+export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, opts: AsciiOptions = {}): Promise<AsciiScene | null> {
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
@@ -47,7 +56,8 @@ export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, o
   let raf = 0;
   let last = 0;
   let started = false;
-  let introDone = false;
+  let introDone = opts.intro === false;
+  const anchorY = opts.anchorY ?? 1;
   let pointer: { x: number; y: number } | null = null;
   // "cover" fit, anchored to the bottom so the desk always sits on the fold
   const fit = { x: 0, y: 0, w: 0, h: 0 };
@@ -78,7 +88,7 @@ export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, o
     fit.w = img.naturalWidth * scale;
     fit.h = img.naturalHeight * scale;
     fit.x = (w - fit.w) / 2;
-    fit.y = h - fit.h;
+    fit.y = (h - fit.h) * anchorY;
     sctx.drawImage(img, (fit.x * cols) / w, (fit.y * rows) / h, (fit.w * cols) / w, (fit.h * rows) / h);
     const data = sctx.getImageData(0, 0, cols, rows).data;
 
