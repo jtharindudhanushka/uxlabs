@@ -270,6 +270,67 @@ function scrollAnimations() {
   }
 }
 
+/* ---------- process flow ---------- */
+function processFlow() {
+  const flow = $('[data-flow]');
+  if (!flow) return;
+  const rows = $$('[data-flow-row]', flow);
+  const setActive = (row: HTMLElement) => rows.forEach((r) => r.classList.toggle('is-active', r === row));
+
+  // The row crossing the middle of the screen is the active stage
+  rows.forEach((row) => {
+    ScrollTrigger.create({
+      trigger: row,
+      start: 'top 58%',
+      end: 'bottom 58%',
+      onToggle: (self) => { if (self.isActive) setActive(row); },
+    });
+  });
+
+  if (reduceMotion) return;
+
+  // A point of light travels down the guide line as you scroll through the stages
+  const spark = $('[data-flow-spark]', flow);
+  if (spark) {
+    gsap.fromTo(spark, { y: 0 }, {
+      y: () => flow.offsetHeight,
+      ease: 'none',
+      scrollTrigger: { trigger: flow, start: 'top 58%', end: 'bottom 58%', scrub: 0.6, invalidateOnRefresh: true },
+    });
+  }
+
+  // Each render drifts at its own depth while scrolling (subtle parallax)
+  $$('.flow__object', flow).forEach((el) => {
+    const depth = parseFloat(el.dataset.depth || '1');
+    gsap.fromTo(el, { y: 26 * depth }, {
+      y: -26 * depth,
+      ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true },
+    });
+  });
+}
+
+/* ---------- 3D tilt for renders ---------- */
+function tiltRenders() {
+  if (!finePointer || reduceMotion) return;
+  $$('[data-tilt]').forEach((el) => {
+    const zone = el.closest<HTMLElement>('[data-tilt-zone], [data-flow-row]') || el;
+    gsap.set(el, { transformPerspective: 800 });
+    const rx = gsap.quickTo(el, 'rotationX', { duration: 0.9, ease: 'power3' });
+    const ry = gsap.quickTo(el, 'rotationY', { duration: 0.9, ease: 'power3' });
+    const tx = gsap.quickTo(el, 'x', { duration: 0.9, ease: 'power3' });
+    zone.addEventListener('pointermove', (e) => {
+      const r = zone.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      rx(-py * 14);
+      ry(px * 18);
+      tx(px * 10);
+    });
+    zone.addEventListener('pointerleave', () => { rx(0); ry(0); tx(0); });
+  });
+}
+
 /* ---------- marquee ---------- */
 function marquee() {
   const track = $('[data-marquee]');
@@ -535,6 +596,8 @@ async function init() {
   pointerEffects();
   await document.fonts.ready;
   scrollAnimations();
+  processFlow();
+  tiltRenders();
   marquee();
   const scenePromise = prepareHeroScene();
   await runPreloader();
