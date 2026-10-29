@@ -10,7 +10,6 @@ const stats = [
 ];
 
 
-const wide = subject.width / subject.height > 1.6;
 
 // Violet "code" squares floating over the scene
 const squares = [
@@ -21,14 +20,13 @@ const squares = [
 ];
 ---
 <section id="top" class="hero">
-  <div class="hero__dots" aria-hidden="true"></div>
-  <div class="hero__dots hero__dots--lit" data-dots aria-hidden="true"></div>
   <div class="hero__map" aria-hidden="true">
     <div class="hero__map-track"><pre>{worldMap}</pre><pre>{worldMap}</pre></div>
   </div>
 
-  <div class="container-x relative text-center">
-    <div class="mb-8 flex flex-wrap items-center justify-center gap-4" data-hero-fade>
+  <div class="hero__fold">
+  <div class="hero__copy container-x relative text-center">
+    <div class="mb-7 flex flex-wrap items-center justify-center gap-4" data-hero-fade>
       <span class="pill"><i class="dot"></i>Available for work</span>
       <span class="eyebrow">Website design &amp; development · Worldwide</span>
     </div>
@@ -40,30 +38,32 @@ const squares = [
       </span>
     </h1>
 
-    <p class="lead mx-auto mt-7 max-w-[46ch]" data-hero-fade>
+    <p class="lead mx-auto mt-6 max-w-[46ch]" data-hero-fade>
       UX Labs creates considered websites for startups and growing businesses — from the first screen to the final launch.
     </p>
-    <div class="mt-8 flex flex-wrap justify-center gap-3" data-hero-fade>
+    <div class="mt-7 flex flex-wrap justify-center gap-3" data-hero-fade>
       <Button href="#pricing" label="View packages" arrow />
       <Button href="#start" label="Start a project" variant="ghost" />
     </div>
   </div>
 
-  <div class:list={['hero__scene', wide ? 'hero__scene--wide' : 'hero__scene--object']} data-hero-scene>
-    <div class="hero__glow" aria-hidden="true"></div>
-    <canvas
-      class="hero__canvas"
-      data-ascii-canvas
-      data-src={subject.src}
-      style={`aspect-ratio:${subject.width} / ${subject.height}`}
-      role="img"
-      aria-label="A UX Labs design rendered from lines of code"
-    ></canvas>
-    {squares.map((q) => (
-      <div class="code-square" style={`left:${q.x}%;top:${q.y}%;width:${q.s}px;height:${q.s}px;--d:${q.d}s`} data-square aria-hidden="true">
-        {q.code.map((line) => <span>{line}</span>)}
-      </div>
-    ))}
+  <div class="hero__scene" data-hero-scene>
+    <div class="hero__art" style={`aspect-ratio:${subject.width} / ${subject.height}`}>
+      <div class="hero__glow" aria-hidden="true"></div>
+      <canvas
+        class="hero__canvas"
+        data-ascii-canvas
+        data-src={subject.src}
+        role="img"
+        aria-label="A UX Labs design studio desk rendered from lines of code"
+      ></canvas>
+      {squares.map((q) => (
+        <div class="code-square" style={`left:${q.x}%;top:${q.y}%;width:${q.s}px;height:${q.s}px;--d:${q.d}s`} data-square aria-hidden="true">
+          {q.code.map((line) => <span>{line}</span>)}
+        </div>
+      ))}
+    </div>
+  </div>
   </div>
 
   <div class="container-x relative">

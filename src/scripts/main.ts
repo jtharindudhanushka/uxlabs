@@ -109,7 +109,7 @@ function runPreloader(): Promise<void> {
 function prepareHeroScene(): Promise<AsciiScene | null> {
   const canvas = $<HTMLCanvasElement>('[data-ascii-canvas]');
   if (!canvas?.dataset.src) return Promise.resolve(null);
-  return createAsciiScene(canvas, canvas.dataset.src, { cell: innerWidth < 640 ? 7 : 9, lens: innerWidth < 640 ? 70 : 130 });
+  return createAsciiScene(canvas, canvas.dataset.src, { cell: innerWidth < 640 ? 7 : 9, lens: innerWidth < 640 ? 60 : 95 });
 }
 
 function heroIntro(scenePromise: Promise<AsciiScene | null>) {
@@ -285,19 +285,15 @@ function marquee() {
 function pointerEffects() {
   if (!finePointer || reduceMotion) return;
 
-  // Hero: a brighter dot field follows the pointer; code squares drift in parallax
+  // Hero: code squares drift in parallax with the pointer
   const hero = $('.hero');
-  const dots = $('[data-dots]');
-  if (hero && dots) {
+  if (hero) {
     const squares = $$('[data-square]', hero).map((el, i) => ({
       xTo: gsap.quickTo(el, 'x', { duration: 1.4, ease: 'power3' }),
       yTo: gsap.quickTo(el, 'y', { duration: 1.4, ease: 'power3' }),
       depth: 18 + (i % 3) * 14,
     }));
     hero.addEventListener('pointermove', (e) => {
-      const r = hero.getBoundingClientRect();
-      dots.style.setProperty('--mx', `${e.clientX - r.left}px`);
-      dots.style.setProperty('--my', `${e.clientY - r.top}px`);
       const px = e.clientX / innerWidth - 0.5;
       const py = e.clientY / innerHeight - 0.5;
       squares.forEach((q) => { q.xTo(px * q.depth); q.yTo(py * q.depth); });

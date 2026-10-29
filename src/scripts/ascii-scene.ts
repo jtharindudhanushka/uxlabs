@@ -11,7 +11,8 @@ interface Cell {
   lum: number;
   alpha: number;
   color: string;
-  t: number; // 1 = ascii, 0 = image
+  t: number; // intro: 1 = ascii, 0 = image
+  hv: number; // hover: faint code glyphs over the image
   hold: number; // intro: seconds to stay ascii before dissolving
   ch: string;
 }
@@ -48,6 +49,8 @@ export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, o
   let started = false;
   let introDone = false;
   let pointer: { x: number; y: number } | null = null;
+  // "cover" fit, anchored to the bottom so the desk always sits on the fold
+  const fit = { x: 0, y: 0, w: 0, h: 0 };
 
   const pick = (lum: number) => {
     // Bright cells read as dense code glyphs, dim ones as the luminance ramp
@@ -71,7 +74,12 @@ export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, o
     sample.width = cols;
     sample.height = rows;
     const sctx = sample.getContext('2d', { willReadFrequently: true })!;
-    sctx.drawImage(img, 0, 0, cols, rows);
+    const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+    fit.w = img.naturalWidth * scale;
+    fit.h = img.naturalHeight * scale;
+    fit.x = (w - fit.w) / 2;
+    fit.y = h - fit.h;
+    sctx.drawImage(img, (fit.x * cols) / w, (fit.y * rows) / h, (fit.w * cols) / w, (fit.h * rows) / h);
     const data = sctx.getImageData(0, 0, cols, rows).data;
 
     // Keep each cell's progress when the grid is unchanged (resizes fire mid-intro)
@@ -97,6 +105,7 @@ export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, o
           alpha: a,
           color: `rgb(${tr},${tg},${tb})`,
           t: old ? old.t : introDone ? 0 : 1,
+          hv: 0,
           // dissolve from the bottom up, with a little noise
           hold: old ? old.hold : introDone ? 0 : 0.25 + (1 - r / rows) * 1.1 + Math.random() * 0.45,
           ch: pick(lum),
@@ -111,13 +120,23 @@ export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, o
   const draw = () => {
     ctx.clearRect(0, 0, w, h);
     ctx.globalAlpha = 1;
-    ctx.drawImage(img, 0, 0, w, h);
+    ctx.drawImage(img, fit.x, fit.y, fit.w, fit.h);
     for (const c of cells) {
-      if (c.t < 0.5) continue;
-      ctx.clearRect(c.x, c.y, cellW, cellH);
-      ctx.globalAlpha = c.alpha * (0.35 + c.lum * 0.65) * Math.min(1, c.t * 1.4);
-      ctx.fillStyle = c.color;
-      ctx.fillText(c.ch, c.x, c.y);
+      if (c.t >= 0.5) {
+        // intro: the cell is still code
+        ctx.clearRect(c.x, c.y, cellW, cellH);
+        ctx.globalAlpha = c.alpha * (0.35 + c.lum * 0.65) * Math.min(1, c.t * 1.4);
+        ctx.fillStyle = c.color;
+        ctx.fillText(c.ch, c.x, c.y);
+      } else if (c.hv > 0.04) {
+        // hover: code shimmering through the glass, image stays visible
+        ctx.globalAlpha = c.hv * 0.3;
+        ctx.fillStyle = '#0c0118';
+        ctx.fillRect(c.x, c.y, cellW, cellH);
+        ctx.globalAlpha = c.hv * (0.35 + c.lum * 0.4);
+        ctx.fillStyle = '#ead9ff';
+        ctx.fillText(c.ch, c.x, c.y);
+      }
     }
     ctx.globalAlpha = 1;
   };
@@ -134,17 +153,21 @@ export async function createAsciiScene(canvas: HTMLCanvasElement, src: string, o
         c.t = Math.max(0, c.t - dt * 1.8);
         active = true;
       }
+      if (c.hv > 0) {
+        c.hv = Math.max(0, c.hv - dt * 1.6);
+        active = true;
+      }
       if (pointer) {
         const dx = c.x + cellW / 2 - pointer.x;
         const dy = c.y + cellH / 2 - pointer.y;
         const d = Math.sqrt(dx * dx + dy * dy);
         if (d < lens) {
-          const v = 1 - d / lens;
-          if (v > c.t) c.t = Math.min(1, v * 1.6);
+          const v = Math.pow(1 - d / lens, 1.6);
+          if (v > c.hv) c.hv = v;
           active = true;
         }
       }
-      if (c.t >= 0.5 && Math.random() < 0.12) c.ch = pick(c.lum);
+      if ((c.t >= 0.5 || c.hv > 0.04) && Math.random() < 0.15) c.ch = pick(c.lum);
     }
     pointer = null;
     if (!active && started) introDone = true;
