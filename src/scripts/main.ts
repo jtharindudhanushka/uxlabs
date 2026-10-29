@@ -118,8 +118,92 @@ function heroIntro() {
   gsap
     .timeline({ defaults: { ease: 'expo.out' } })
     .from(split.words, { yPercent: 115, rotate: 4, duration: 1.5, stagger: 0.07 })
-    .from('[data-hero-orb]', { scale: 0.5, autoAlpha: 0, duration: 2.4, ease: 'power3.out' }, 0)
-    .fromTo(fades, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2, stagger: 0.1 }, 0.45);
+    .fromTo('[data-beam]', { autoAlpha: 0, scaleY: 0.4, transformOrigin: '50% 0%' }, { autoAlpha: 1, scaleY: 1, duration: 2.2, ease: 'power3.out' }, 0)
+    .fromTo(fades, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2, stagger: 0.1 }, 0.45)
+    // The website assembles: each layer drops onto the stack
+    .fromTo('[data-slab]', { '--drop': '520px', autoAlpha: 0 }, { '--drop': '0px', autoAlpha: 1, duration: 1.4, stagger: 0.16, ease: 'expo.out' }, 0.5);
+}
+
+/* ---------- hero scene: isometric website layers ---------- */
+function heroScene() {
+  const scene = $('[data-scene]');
+  const stage = $('[data-stage]');
+  if (!scene || !stage) return;
+  const slabs = $$('[data-slab]', scene);
+  const buttons = $$<HTMLButtonElement>('[data-layer-btn]', scene);
+  const details = $$('[data-layer-detail]', scene);
+
+  let active = slabs.length - 1;
+  const setActive = (i: number) => {
+    active = i;
+    slabs.forEach((el, j) => el.classList.toggle('is-active', j === i));
+    buttons.forEach((el, j) => {
+      el.classList.toggle('is-active', j === i);
+      el.setAttribute('aria-pressed', String(j === i));
+    });
+    details.forEach((el, j) => el.classList.toggle('is-active', j === i));
+  };
+  setActive(active);
+
+  // Cycle through the stages while the hero is on screen and nobody is choosing
+  let timer = 0;
+  let paused = false;
+  let visible = true;
+  const tick = () => { if (!paused && visible) setActive((active + 1) % slabs.length); };
+  const start = () => { clearInterval(timer); timer = window.setInterval(tick, 2600); };
+  if (!reduceMotion) start();
+  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(scene);
+
+  buttons.forEach((btn, i) => {
+    const choose = () => { paused = true; setActive(i); };
+    btn.addEventListener('pointerenter', choose);
+    btn.addEventListener('focus', choose);
+    btn.addEventListener('click', choose);
+  });
+  scene.addEventListener('pointerleave', () => { paused = false; if (!reduceMotion) start(); });
+
+  if (reduceMotion) return;
+
+  // Scrolling away pulls the layers apart
+  gsap.fromTo(scene, { '--spread': 0 }, {
+    '--spread': 1,
+    ease: 'none',
+    scrollTrigger: { trigger: scene, start: 'top 60%', end: 'bottom top', scrub: true },
+  });
+  gsap.to('[data-beam]', {
+    opacity: 0.35,
+    ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
+  });
+
+  if (!finePointer) return;
+
+  // The scene tilts toward the pointer; decor drifts in parallax
+  const hero = $('.hero')!;
+  const tilt = { rx: 58, rz: -45, trx: 58, trz: -45 };
+  const decor = $$('[data-decor]', hero).map((el) => ({
+    dir: parseFloat(el.dataset.decor || '1'),
+    xTo: gsap.quickTo(el, 'x', { duration: 1.6, ease: 'power3' }),
+    yTo: gsap.quickTo(el, 'y', { duration: 1.6, ease: 'power3' }),
+  }));
+  hero.addEventListener('pointermove', (e) => {
+    const px = e.clientX / innerWidth - 0.5;
+    const py = e.clientY / innerHeight - 0.5;
+    tilt.trz = -45 + px * 22;
+    tilt.trx = 58 - py * 14;
+    decor.forEach((d) => { d.xTo(px * 40 * d.dir); d.yTo(py * 30); });
+  });
+  hero.addEventListener('pointerleave', () => { tilt.trz = -45; tilt.trx = 58; });
+  gsap.ticker.add(() => {
+    if (!visible) return;
+    const drx = tilt.trx - tilt.rx;
+    const drz = tilt.trz - tilt.rz;
+    if (Math.abs(drx) < 0.01 && Math.abs(drz) < 0.01) return;
+    tilt.rx += drx * 0.06;
+    tilt.rz += drz * 0.06;
+    stage.style.setProperty('--rx', `${tilt.rx.toFixed(2)}deg`);
+    stage.style.setProperty('--rz', `${tilt.rz.toFixed(2)}deg`);
+  });
 }
 
 /* ---------- scroll animations ---------- */
@@ -245,19 +329,6 @@ function marquee() {
 /* ---------- pointer effects ---------- */
 function pointerEffects() {
   if (!finePointer || reduceMotion) return;
-
-  // Hero glow follows the pointer
-  const hero = $('.hero');
-  const orb = $('[data-hero-orb]');
-  if (hero && orb) {
-    const xTo = gsap.quickTo(orb, 'x', { duration: 1.6, ease: 'power3' });
-    const yTo = gsap.quickTo(orb, 'y', { duration: 1.6, ease: 'power3' });
-    hero.addEventListener('pointermove', (e) => {
-      const r = hero.getBoundingClientRect();
-      xTo((e.clientX - r.left - r.width / 2) * 0.35);
-      yTo((e.clientY - r.top - r.height / 2) * 0.25);
-    });
-  }
 
   // About visual tilts toward the pointer
   const studio = $('[data-studio]');
@@ -492,6 +563,7 @@ async function init() {
   customSelects();
   briefForm();
   pointerEffects();
+  heroScene();
   await document.fonts.ready;
   scrollAnimations();
   marquee();

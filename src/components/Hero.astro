@@ -1,48 +1,148 @@
 ---
 import Button from './Button.astro';
-const stats = [
-  { value: '10', prefix: '', suffix: '-day', title: 'target', text: 'For focused projects with timely feedback.' },
-  { value: '499', prefix: 'From $', suffix: '', title: '', text: 'Fixed project pricing.' },
-  { value: '', prefix: '', suffix: '', title: 'Design + development', text: 'One process, one team.' },
+import Logo from './Logo.astro';
+
+const layers = [
+  { key: 'wire', num: 'Day 0', name: 'Brief', text: 'Share your brief. We confirm the scope and map out structure and content.' },
+  { key: 'design', num: 'Day 2', name: 'First draft', text: 'A first design draft lands within two days, ready to react to.' },
+  { key: 'build', num: 'Day 3–9', name: 'Refine & build', text: 'We brainstorm it together, refine the design and build it out.' },
+  { key: 'launch', num: 'Day 10', name: 'Launch', text: 'Tested across devices and delivered within 10 days.*' },
 ];
+
+const stats = [
+  { value: '2', prefix: '', suffix: '-day', title: 'first draft', text: 'Something real to react to, fast.' },
+  { value: '10', prefix: '', suffix: '-day', title: 'delivery*', text: 'For focused projects with timely feedback.' },
+  { value: '499', prefix: 'From $', suffix: '', title: '', text: 'Fixed project pricing.' },
+];
+
+// Deterministic star field so the markup is stable between builds
+let seed = 11;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const stars = Array.from({ length: 40 }, () => ({
+  x: rnd() * 100,
+  y: rnd() * 75,
+  s: rnd() * 1.6 + 0.6,
+  d: rnd() * 5,
+}));
+
+// Optional generated decor (added when the image-generation assets land)
+const decor = import.meta.glob<{ default: ImageMetadata }>('../assets/hero/*.{png,webp}', { eager: true });
+const decorLeft = Object.entries(decor).find(([p]) => /left/.test(p))?.[1].default;
+const decorRight = Object.entries(decor).find(([p]) => /right/.test(p))?.[1].default;
 ---
 <section id="top" class="hero">
-  <div class="bg-grid" aria-hidden="true"></div>
-  <div class="orb" data-hero-orb aria-hidden="true"></div>
+  <div class="hero__beam" data-beam aria-hidden="true"><span></span></div>
+  <div class="hero__stars" aria-hidden="true">
+    {stars.map((s) => (
+      <i style={`left:${s.x.toFixed(2)}%;top:${s.y.toFixed(2)}%;width:${s.s.toFixed(2)}px;height:${s.s.toFixed(2)}px;animation-delay:-${s.d.toFixed(2)}s`}></i>
+    ))}
+  </div>
+  {decorLeft && <img class="hero__decor hero__decor--left" src={decorLeft.src} alt="" width="640" height="640" data-decor="-1" aria-hidden="true" />}
+  {decorRight && <img class="hero__decor hero__decor--right" src={decorRight.src} alt="" width="640" height="640" data-decor="1" aria-hidden="true" />}
 
-  <div class="container-x relative">
-    <div class="mb-8 flex flex-wrap items-center gap-4 md:mb-10" data-hero-fade>
+  <div class="container-x relative text-center">
+    <div class="mb-8 flex flex-wrap items-center justify-center gap-4" data-hero-fade>
       <span class="pill"><i class="dot"></i>Available for work</span>
       <span class="eyebrow">Website design &amp; development</span>
     </div>
 
-    <h1 class="hero__title display max-w-[14ch]" data-hero-title>
-      Websites, designed properly. Delivered quickly.
+    <h1 class="hero__title display mx-auto" data-hero-title>
+      Websites, designed <em class="serif">properly.</em> Delivered quickly.
     </h1>
 
-    <div class="mt-10 grid gap-10 md:mt-14 md:grid-cols-12 md:items-end">
-      <div class="md:col-span-6 lg:col-span-5" data-hero-fade>
-        <p class="lead max-w-[46ch]">
-          UX Labs creates considered websites for startups and growing businesses — from the first screen to the final launch.
-        </p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <Button href="#pricing" label="View packages" arrow />
-          <Button href="#start" label="Start a project" variant="ghost" />
-        </div>
-      </div>
+    <p class="lead mx-auto mt-8 max-w-[46ch]" data-hero-fade>
+      UX Labs creates considered websites for startups and growing businesses — from the first screen to the final launch.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3" data-hero-fade>
+      <Button href="#pricing" label="View packages" arrow />
+      <Button href="#start" label="Start a project" variant="ghost" />
+    </div>
+  </div>
 
-      <dl class="grid grid-cols-3 gap-4 border-t pt-6 hairline md:col-span-6 md:col-start-7 lg:col-span-6 lg:col-start-7" data-hero-fade>
-        {stats.map((s) => (
-          <div>
-            <dt class="text-base font-medium tracking-tight text-white md:text-lg">
-              {s.value ? (
-                <>{s.prefix}<span data-count-to={s.value}>{s.value}</span>{s.suffix} {s.title}</>
-              ) : s.title}
-            </dt>
-            <dd class="mt-1.5 text-xs leading-relaxed text-white/50 md:text-sm">{s.text}</dd>
+  <div class="scene container-x" data-scene>
+    <ol class="scene__labels" aria-label="How a UX Labs website comes together">
+      {layers.map((l, i) => (
+        <li>
+          <button type="button" class:list={['scene__label', i === 3 && 'is-active']} data-layer-btn={i}>
+            <span class="scene__label-num">{l.num}</span>{l.name}
+          </button>
+        </li>
+      ))}
+    </ol>
+
+    <div class="scene__viewport" aria-hidden="true">
+      <div class="scene__pool"></div>
+      <div class="scene__stage" data-stage>
+        {layers.map((l, i) => (
+          <div class:list={['slab', `slab--${l.key}`, i === 3 && 'is-active']} style={`--i:${i}`} data-slab>
+            <div class="slab__side slab__side--front"></div>
+            <div class="slab__side slab__side--right"></div>
+            <div class="slab__top">
+              {l.key === 'wire' && (
+                <svg class="slab__art" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2.5 2">
+                  <rect x="10" y="10" width="80" height="8" rx="1.5" />
+                  <rect x="10" y="24" width="80" height="30" rx="2" />
+                  <path d="M10 24l80 30M90 24 10 54" stroke-dasharray="none" opacity="0.4" />
+                  <rect x="10" y="60" width="24" height="30" rx="2" />
+                  <rect x="38" y="60" width="24" height="30" rx="2" />
+                  <rect x="66" y="60" width="24" height="30" rx="2" />
+                </svg>
+              )}
+              {l.key === 'design' && (
+                <div class="slab__ui">
+                  <span class="ui-nav"></span>
+                  <span class="ui-hero"></span>
+                  <span class="ui-line"></span>
+                  <span class="ui-line ui-line--short"></span>
+                  <span class="ui-cards"><i></i><i></i><i></i></span>
+                </div>
+              )}
+              {l.key === 'build' && (
+                <div class="slab__code">
+                  <span style="--w:42%;--c:#c084fc"></span>
+                  <span style="--w:64%;--c:#ffffff55;--x:8%"></span>
+                  <span style="--w:38%;--c:#f1dfff;--x:16%"></span>
+                  <span style="--w:56%;--c:#7a00da;--x:16%"></span>
+                  <span style="--w:30%;--c:#ffffff55;--x:8%"></span>
+                  <span style="--w:48%;--c:#c084fc;--x:8%"></span>
+                  <span style="--w:22%;--c:#ffffff55"></span>
+                </div>
+              )}
+              {l.key === 'launch' && (
+                <div class="slab__launch">
+                  <Logo class="w-[58%] text-white" title="" />
+                  <span class="slab__live"><i class="dot"></i>Live</span>
+                </div>
+              )}
+            </div>
           </div>
         ))}
-      </dl>
+      </div>
     </div>
+
+    <div class="scene__details">
+      {layers.map((l, i) => (
+        <div class:list={['scene__detail', i === 3 && 'is-active']} data-layer-detail={i}>
+          <p class="eyebrow"><span class="eyebrow__num">{l.num}</span>{l.name}</p>
+          <p class="mt-3 text-white/70">{l.text}</p>
+          {l.key === 'launch' && <p class="mt-2 text-xs text-white/40">*Conditions apply — scope, content and feedback speed affect the timeline.</p>}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="container-x relative">
+    <dl class="hero__stats" data-hero-fade>
+      {stats.map((s) => (
+        <div>
+          <dt class="text-base font-medium tracking-tight text-white md:text-lg">
+            {s.value ? (
+              <>{s.prefix}<span data-count-to={s.value}>{s.value}</span>{s.suffix} {s.title}</>
+            ) : s.title}
+          </dt>
+          <dd class="mt-1.5 text-xs leading-relaxed text-white/50 md:text-sm">{s.text}</dd>
+        </div>
+      ))}
+    </dl>
   </div>
 </section>
