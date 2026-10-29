@@ -1,9 +1,11 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import Lenis from 'lenis';
+import { createAsciiScene, type AsciiScene } from './ascii-scene';
 
-gsap.registerPlugin(ScrollTrigger, SplitText);
+gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 
 const root = document.documentElement;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -104,105 +106,58 @@ function runPreloader(): Promise<void> {
 }
 
 /* ---------- hero intro ---------- */
-function heroIntro() {
-  const title = $('[data-hero-title]');
-  const fades = $$('[data-hero-fade]');
-  if (!title) return;
-  if (reduceMotion) {
-    gsap.set([title, ...fades], { autoAlpha: 1 });
-    return;
-  }
-  const split = SplitText.create(title, { type: 'lines,words', mask: 'lines', linesClass: 'split-line' });
-  split.words.at(-1)?.classList.add('text-grad');
-  gsap.set(title, { autoAlpha: 1 });
-  gsap
-    .timeline({ defaults: { ease: 'expo.out' } })
-    .from(split.words, { yPercent: 115, rotate: 4, duration: 1.5, stagger: 0.07 })
-    .fromTo('[data-beam]', { autoAlpha: 0, scaleY: 0.4, transformOrigin: '50% 0%' }, { autoAlpha: 1, scaleY: 1, duration: 2.2, ease: 'power3.out' }, 0)
-    .fromTo(fades, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2, stagger: 0.1 }, 0.45)
-    // The website assembles: each layer drops onto the stack
-    .fromTo('[data-slab]', { '--drop': '520px', autoAlpha: 0 }, { '--drop': '0px', autoAlpha: 1, duration: 1.4, stagger: 0.16, ease: 'expo.out' }, 0.5);
+function prepareHeroScene(): Promise<AsciiScene | null> {
+  const canvas = $<HTMLCanvasElement>('[data-ascii-canvas]');
+  if (!canvas?.dataset.src) return Promise.resolve(null);
+  return createAsciiScene(canvas, canvas.dataset.src, { cell: innerWidth < 640 ? 7 : 9, lens: innerWidth < 640 ? 70 : 130 });
 }
 
-/* ---------- hero scene: isometric website layers ---------- */
-function heroScene() {
-  const scene = $('[data-scene]');
-  const stage = $('[data-stage]');
-  if (!scene || !stage) return;
-  const slabs = $$('[data-slab]', scene);
-  const buttons = $$<HTMLButtonElement>('[data-layer-btn]', scene);
-  const details = $$('[data-layer-detail]', scene);
+function heroIntro(scenePromise: Promise<AsciiScene | null>) {
+  const title = $('[data-hero-title]');
+  const lines = $$('[data-hero-line]');
+  const fades = $$('[data-hero-fade]');
+  const squares = $$('[data-square]');
+  if (!title) return;
+  const startScene = () => scenePromise.then((scene) => scene?.start());
 
-  let active = slabs.length - 1;
-  const setActive = (i: number) => {
-    active = i;
-    slabs.forEach((el, j) => el.classList.toggle('is-active', j === i));
-    buttons.forEach((el, j) => {
-      el.classList.toggle('is-active', j === i);
-      el.setAttribute('aria-pressed', String(j === i));
-    });
-    details.forEach((el, j) => el.classList.toggle('is-active', j === i));
-  };
-  setActive(active);
+  if (reduceMotion) {
+    gsap.set([title, ...fades, ...squares], { autoAlpha: 1 });
+    startScene();
+    return;
+  }
 
-  // Cycle through the stages while the hero is on screen and nobody is choosing
-  let timer = 0;
-  let paused = false;
-  let visible = true;
-  const tick = () => { if (!paused && visible) setActive((active + 1) % slabs.length); };
-  const start = () => { clearInterval(timer); timer = window.setInterval(tick, 2600); };
-  if (!reduceMotion) start();
-  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(scene);
+  gsap.set(title, { autoAlpha: 1 });
+  const scrambles = $$('[data-scramble]', title);
+  gsap
+    .timeline({ defaults: { ease: 'expo.out' } })
+    .fromTo(lines[0], { yPercent: 60, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.3 }, 0)
+    .fromTo(lines[1], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.25)
+    .add(() => {
+      scrambles.forEach((el, i) =>
+        gsap.to(el, {
+          duration: 1.4 + i * 0.3,
+          scrambleText: { text: el.dataset.text || el.textContent || '', chars: 'upperAndLowerCase', speed: 0.6, revealDelay: 0.15 },
+          ease: 'none',
+        }),
+      );
+    }, 0.3)
+    .fromTo(fades, { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.1, stagger: 0.08 }, 0.5)
+    .add(startScene, 0.6)
+    .fromTo(squares, { scale: 0, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.8, stagger: 0.12, ease: 'back.out(2)' }, 1.4);
 
-  buttons.forEach((btn, i) => {
-    const choose = () => { paused = true; setActive(i); };
-    btn.addEventListener('pointerenter', choose);
-    btn.addEventListener('focus', choose);
-    btn.addEventListener('click', choose);
-  });
-  scene.addEventListener('pointerleave', () => { paused = false; if (!reduceMotion) start(); });
-
-  if (reduceMotion) return;
-
-  // Scrolling away pulls the layers apart
-  gsap.fromTo(scene, { '--spread': 0 }, {
-    '--spread': 1,
-    ease: 'none',
-    scrollTrigger: { trigger: scene, start: 'top 60%', end: 'bottom top', scrub: true },
-  });
-  gsap.to('[data-beam]', {
-    opacity: 0.35,
-    ease: 'none',
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
-  });
-
-  if (!finePointer) return;
-
-  // The scene tilts toward the pointer; decor drifts in parallax
-  const hero = $('.hero')!;
-  const tilt = { rx: 58, rz: -45, trx: 58, trz: -45 };
-  const decor = $$('[data-decor]', hero).map((el) => ({
-    dir: parseFloat(el.dataset.decor || '1'),
-    xTo: gsap.quickTo(el, 'x', { duration: 1.6, ease: 'power3' }),
-    yTo: gsap.quickTo(el, 'y', { duration: 1.6, ease: 'power3' }),
-  }));
-  hero.addEventListener('pointermove', (e) => {
-    const px = e.clientX / innerWidth - 0.5;
-    const py = e.clientY / innerHeight - 0.5;
-    tilt.trz = -45 + px * 22;
-    tilt.trx = 58 - py * 14;
-    decor.forEach((d) => { d.xTo(px * 40 * d.dir); d.yTo(py * 30); });
-  });
-  hero.addEventListener('pointerleave', () => { tilt.trz = -45; tilt.trx = 58; });
-  gsap.ticker.add(() => {
-    if (!visible) return;
-    const drx = tilt.trx - tilt.rx;
-    const drz = tilt.trz - tilt.rz;
-    if (Math.abs(drx) < 0.01 && Math.abs(drz) < 0.01) return;
-    tilt.rx += drx * 0.06;
-    tilt.rz += drz * 0.06;
-    stage.style.setProperty('--rx', `${tilt.rx.toFixed(2)}deg`);
-    stage.style.setProperty('--rz', `${tilt.rz.toFixed(2)}deg`);
+  // Hovering the headline decodes the second line again
+  scrambles.forEach((el) => (el.dataset.text = el.textContent || ''));
+  let busy = false;
+  title.addEventListener('pointerenter', () => {
+    if (busy) return;
+    busy = true;
+    scrambles.forEach((el, i) =>
+      gsap.to(el, {
+        duration: 0.9 + i * 0.2,
+        scrambleText: { text: el.dataset.text || '', chars: 'upperAndLowerCase', speed: 0.8 },
+        onComplete: () => { busy = false; },
+      }),
+    );
   });
 }
 
@@ -329,6 +284,25 @@ function marquee() {
 /* ---------- pointer effects ---------- */
 function pointerEffects() {
   if (!finePointer || reduceMotion) return;
+
+  // Hero: a brighter dot field follows the pointer; code squares drift in parallax
+  const hero = $('.hero');
+  const dots = $('[data-dots]');
+  if (hero && dots) {
+    const squares = $$('[data-square]', hero).map((el, i) => ({
+      xTo: gsap.quickTo(el, 'x', { duration: 1.4, ease: 'power3' }),
+      yTo: gsap.quickTo(el, 'y', { duration: 1.4, ease: 'power3' }),
+      depth: 18 + (i % 3) * 14,
+    }));
+    hero.addEventListener('pointermove', (e) => {
+      const r = hero.getBoundingClientRect();
+      dots.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      dots.style.setProperty('--my', `${e.clientY - r.top}px`);
+      const px = e.clientX / innerWidth - 0.5;
+      const py = e.clientY / innerHeight - 0.5;
+      squares.forEach((q) => { q.xTo(px * q.depth); q.yTo(py * q.depth); });
+    });
+  }
 
   // About visual tilts toward the pointer
   const studio = $('[data-studio]');
@@ -563,12 +537,12 @@ async function init() {
   customSelects();
   briefForm();
   pointerEffects();
-  heroScene();
   await document.fonts.ready;
   scrollAnimations();
   marquee();
+  const scenePromise = prepareHeroScene();
   await runPreloader();
-  heroIntro();
+  heroIntro(scenePromise);
   ScrollTrigger.refresh();
 }
 
